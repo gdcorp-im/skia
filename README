@@ -1,3 +1,14 @@
 Skia is a complete 2D graphic library for drawing Text, Geometries, and Images.
 
 See full details, and build instructions, at https://skia.org.
+
+# RenderKit
+
+See [RenderKit](https://github.com/gdcorp-im/mv-renderkit) for more details.
+
+Patches are cherry picked to branch `renderkit/mXX` using the base branch `chrome/mXX`
+
+Patches
+
+1. The AsWinding algorithm in Skia's pathops uses ray casting for containment testing. When the ray intersects path vertices exactly, the algorithm can incorrectly determine containment, leading to holes being filled.
+   Multi-ray consensus approach that casts 3 rays from slightly different Y coordinates (0.0, -0.0003, +0.0003) and uses majority voting to determine containment. (@aharris1-godaddy)

@@ -298,11 +298,35 @@ public:
         }
         // find all edges on greater equal or to the left of one on lesser
         contour.fMinXY = test.fMinXY;
-        int winding = this->nextEdge(contour, Edge::kCompare);
-        // if edge is up, mark contour cw, otherwise, ccw
-        // sum of greater edges direction should be cw, 0, ccw
-        test.fContained = winding != 0;
-        return -1 <= winding && winding <= 1;
+
+        // cast rays from multiple Y coordinates to get consensus
+        const int numRays = 3;
+        const SkScalar rayOffsets[numRays] = { 0.0f, -0.0003f, 0.0003f };
+        int containmentVotes = 0;
+        int originalWinding = 0;
+
+        for (int rayIndex = 0; rayIndex < numRays; ++rayIndex) {
+            SkPoint testPoint = test.fMinXY;
+            testPoint.fY += rayOffsets[rayIndex];
+            contour.fMinXY = testPoint;
+
+            int winding = this->nextEdge(contour, Edge::kCompare);
+
+            // store the winding from the first ray (original point) for return value
+            if (rayIndex == 0) {
+                originalWinding = winding;
+            }
+
+            if (winding != 0) {
+                containmentVotes++;
+            }
+        }
+
+        // use majority vote to determine containment
+        test.fContained = (containmentVotes > numRays / 2);
+
+        // return the validity check using the original winding
+        return -1 <= originalWinding && originalWinding <= 1;
     }
 
     void inParent(Contour& contour, Contour& parent) {
